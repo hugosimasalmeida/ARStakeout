@@ -1,0 +1,28 @@
+name: ARStakeout
+options:
+  bundleIdPrefix: com.fieldtools
+  deploymentTarget:
+    iOS: "17.0"
+
+targets:
+  ARStakeout:
+    type: application
+    platform: iOS
+    sources:
+      - Sources
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: ARStakeout
+        UILaunchScreen: {}
+        NSCameraUsageDescription: "Necessaria para mostrar as estacas em realidade aumentada"
+        UIRequiredDeviceCapabilities: [arkit]
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.fieldtools.arstakeout
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.9"
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGNING_ALLOWED: "NO"
