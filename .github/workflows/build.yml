@@ -1,0 +1,58 @@
+name: Build ARStakeout IPA
+
+# Runs when you click "Run workflow" in the Actions tab,
+# and also on every push to main.
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-ipa:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select newest available Xcode
+        run: |
+          ls -d /Applications/Xcode*.app || true
+          NEWEST=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          echo "Using $NEWEST"
+          sudo xcode-select -s "$NEWEST/Contents/Developer"
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build unsigned archive
+        run: |
+          xcodebuild \
+            -project ARStakeout.xcodeproj \
+            -scheme ARStakeout \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/ARStakeout.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            archive
+
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -R "build/ARStakeout.xcarchive/Products/Applications/ARStakeout.app" Payload/
+          zip -r ARStakeout.ipa Payload
+          ls -la ARStakeout.ipa
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ARStakeout-ipa
+          path: ARStakeout.ipa
+          retention-days: 30
